@@ -1,0 +1,61 @@
+version: "3.3"
+
+volumes:
+    db:
+        driver_opts:
+            type: none
+            o: bind
+            device: /home/akotzky/data/db
+    wp:
+        driver_opts:
+            type: none
+            o: bind
+            device: /home/akotzky/data/wp
+
+networks:
+    app:
+
+services:
+    wordpress:
+        restart: always
+        env_file:
+            - .env
+        container_name: "wordpress"
+        build: ./requirements/wordpress
+        image: wordpress
+        volumes:
+            - wp:/var/www
+        networks:
+            - app
+
+    mariadb:
+        restart: always
+        env_file:
+            - .env
+        container_name: "mariadb"
+        build:
+            context: ./requirements/mariadb
+            dockerfile: Dockerfile
+            args:
+                DB_USER: ${DB_USER}
+                DB_PASSWORD: ${DB_PASSWORD}
+        image: mariadb
+        volumes:
+            - db:/var/lib/mysql
+        networks:
+            - app
+
+    nginx:
+        restart: always
+        container_name: "nginx"
+        build: ./requirements/nginx
+        image: nginx
+        ports:
+            - "443:443" 
+        volumes:
+            - wp:/var/www
+        networks:
+            - app
+
+
+

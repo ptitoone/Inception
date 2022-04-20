@@ -1,0 +1,36 @@
+server {
+	listen 80 default_server;
+	listen [::]:80 default_server;
+	server_name _;
+	return 301 https://$host$request_uri;
+}
+
+
+server {
+
+	# SSL configuration
+	#
+	listen 443 ssl default_server;
+	listen [::]:443 ssl default_server;
+
+	ssl_certificate /etc/nginx/ssl/ft_server.crt;
+	ssl_certificate_key /etc/nginx/ssl/ft_server.key;
+    ssl_protocols TLSv1.2;
+
+	root /var/www/wordpress;
+
+	index index.html index.htm index.nginx-debian.html index.php;
+
+	server_name akotzky.42.fr www.akotzky.42.fr;
+
+	location / {
+		try_files $uri $uri/ =404;
+	}
+
+	location ~ \.php$ {
+		include snippets/fastcgi-php.conf;
+		fastcgi_pass wordpress:9000;
+		autoindex on;
+	}
+}
+
