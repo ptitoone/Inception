@@ -1,0 +1,109 @@
+version: "3.8"
+
+volumes:
+    db:
+        driver_opts:
+            type: none
+            o: bind
+            device: /home/akotzky/data/db
+    wp:
+        driver_opts:
+            type: none
+            o: bind
+            device: /home/akotzky/data/wp
+    ad:
+        driver_opts:
+            type: none
+            o: bind
+            device: /home/akotzky/data/ad
+    st:
+        driver_opts:
+            type: none
+            o: bind
+            device: /home/akotzky/data/st
+
+networks:
+    app:
+
+services:
+    nginx:
+        restart: always
+        container_name: "nginx"
+        build:
+            context: ./requirements/nginx
+            args:
+                USERNAME: ${USERNAME}
+        image: nginx
+        ports:
+            - "443:443" 
+        volumes:
+            - wp:/var/www/wordpress
+            - ad:/var/www/adminer
+            - st:/var/www/static
+        networks:
+            - app
+
+    wordpress:
+        restart: always
+        container_name: "wordpress"
+        build: ./requirements/wordpress
+        image: wordpress
+        volumes:
+            - wp:/var/www/wordpress
+            - ad:/var/www/adminer
+        networks:
+            - app
+        env_file:
+             .env
+
+    mariadb:
+        restart: always
+        container_name: "mariadb"
+        build: ./requirements/mariadb
+        image: mariadb
+        volumes:
+            - db:/var/lib/mysql
+        networks:
+            - app
+
+    vsftpd:
+        restart: always
+        container_name: "vsftpd"
+        build:
+            context: ./requirements/vsftpd
+            args:
+                WP_FTP_USER_NAME: ${WP_FTP_USER_NAME}
+                WP_FTP_USER_PASS: ${WP_FTP_USER_PASS}
+                AD_FTP_USER_NAME: ${AD_FTP_USER_NAME}
+                AD_FTP_USER_PASS: ${AD_FTP_USER_PASS}
+                ST_FTP_USER_NAME: ${ST_FTP_USER_NAME}
+                ST_FTP_USER_PASS: ${ST_FTP_USER_PASS}
+        image: vsftpd
+        ports:
+            - "21:21" 
+            - "20:20" 
+        volumes:
+            - wp:/home/wordpress
+            - ad:/home/adminer
+            - st:/home/static
+        networks:
+            - app
+
+    redis:
+        restart: always
+        container_name: "redis"
+        build:
+            context: ./requirements/redis
+        image: redis
+        networks:
+            - app
+
+    snake:
+        restart: always
+        container_name: "ssh"
+        build: ./requirements/ssh
+        image: ssh
+        ports:
+            - "22:22"
+        networks:
+            - app
