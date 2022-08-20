@@ -33,3 +33,5 @@ A last container with SSH is present just for demonstation, it is possible to pl
 #### Skills gained:
 
 Going a bit further in depth with Docker compose and system administation. Various services where needed to be configured. This has given me better knowledge with Nginx server blocks/names and Docker networking, volumes, environement variables, PID 1 for clean stop of the containers trough proper signal transmission to child... processes
+
+![alt text](https://i.imgur.com/uuZEdJb.png "Final grade 125/100")
